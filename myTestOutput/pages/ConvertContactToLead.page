@@ -1,3 +1,0 @@
-<apex:page standardController="Contact" extensions="ContactToLeadController" tabStyle="Contact" action="{!revertToLead}" >
-  <apex:pageMessages />
-</apex:page>

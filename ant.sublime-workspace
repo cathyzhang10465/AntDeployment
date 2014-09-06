@@ -1,0 +1,669 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"Person",
+				"PersonEmail	Email(80)"
+			],
+			[
+				"Per",
+				"PersonEmail	Email(80)"
+			],
+			[
+				"ser",
+				"serverurl"
+			],
+			[
+				"Sch",
+				"Schedulable	System"
+			],
+			[
+				"Proce",
+				"ProcessDefinitionId"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "build.properties",
+			"settings":
+			{
+				"buffer_size": 953,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "<project name=\"Sandbox refresh Ant tasks\" default=\"test\" basedir=\".\" xmlns:sf=\"antlib:com.salesforce\">\n\n    <property file=\"build.properties\"/>\n    <property environment=\"env\"/>\n\n<!--\n    <taskdef resource=\"com/salesforce/antlib.xml\" uri=\"antlib:com.salesforce\">\n        <classpath>\n            <pathelement location=\"../ant-salesforce.jar\" />\n        </classpath>\n    </taskdef>\n-->\n    <!-- Import macros -->\n    <import file=\"${basedir}/lib/ant-salesforce.xml\"/>\n\n    <!-- deploy the code to do mask -->\n    \n    <target name=\"getCathyZhangClass\">\n      <mkdir dir=\"myTestOutput\"/>\n      <!-- Retrieve the contents into another directory -->\n      <sf:retrieve username=\"${sf.username1}\" password=\"${sf.password1}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" retrieveTarget=\"myTestOutput\" unpackaged=\"unpackaged/package.xml\"/>\n    </target>\n\n    <target name=\"deployMaskCode\">\n\n      <!-- Upload the contents of the \"codepkg\" directory, running the tests for just 1 class -->\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}${sf.token}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"src\" rollbackOnError=\"true\">\n      </sf:deploy>\n  \n    </target>\n\n    <!-- run the code to do mask -->\n    <target name=\"runMaskCode\">\n\n      <echo message=\"${sf.password}\"/>\n      <!-- Execute the following Apex code -->\n      <executeApex\n          username=\"${sf.username}\"\n          password=\"${sf.password}${sf.token}\">\n          String mask = '${sf.mask}';\n          <![CDATA[\n\n            BatchAccountEmailMask batch1 = new BatchAccountEmailMask(mask);\n            batch1.run();\n            BatchContactEmailMask batch2 = new BatchContactEmailMask(mask);\n            batch2.run();\n            BatchLeadEmailMask batch3 = new BatchLeadEmailMask(mask);\n            batch3.run();\n            BatchOpportunityEmailMask batch4 = new BatchOpportunityEmailMask(mask);\n            batch4.run();\n            //BatchLeasePaymentEmailMask batch = new BatchLeasePaymentEmailMask(mask);\n            //batch.run();\n            //BatchEmailRecipientEmailMask batch = new BatchEmailRecipientEmailMask(mask);\n            //batch.run();\n            //BatchPriceListEmailMask batch = new BatchPriceListEmailMask(mask);\n            //batch.run();\n\n          ]]>\n      </executeApex>      \n  \n    </target>\n\n    <!-- Test out deploy and retrieve verbs for package 'mypkg' -->\n    <target name=\"getTab\">\n      <mkdir dir=\"myTestOutput\"/>\n      <!-- Retrieve the contents into another directory -->\n      <sf:retrieve username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" retrieveTarget=\"myTestOutput\" unpackaged=\"unpackaged/package.xml\"/>\n    </target>\n\n    <!-- Test out deploy and retrieve verbs for package 'mypkg' -->\n    <target name=\"test\">\n      <!-- Upload the contents of the \"mypkg\" package -->\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"mypkg\" rollbackOnError=\"true\"/>\n      <mkdir dir=\"retrieveOutput\"/>\n      <!-- Retrieve the contents into another directory -->\n      <sf:retrieve username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" retrieveTarget=\"retrieveOutput\" packageNames=\"MyPkg\"/>\n    </target>\n\n    <!-- Retrieve an unpackaged set of metadata from your org -->\n    <!-- The file unpackaged/package.xml lists what is to be retrieved -->\n    <target name=\"retrieveUnpackaged\">\n      <mkdir dir=\"retrieveUnpackaged\"/>\n      <!-- Retrieve the contents into another directory -->\n      <sf:retrieve username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" retrieveTarget=\"retrieveUnpackaged\" unpackaged=\"unpackaged/package.xml\"/>\n    </target>\n\n    <!-- Retrieve all the items of a particular metadata type -->\n    <target name=\"bulkRetrieve\">\n      <sf:bulkRetrieve username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" metadataType=\"${sf.metadataType}\" retrieveTarget=\"retrieveUnpackaged\"/>\n    </target>\n\n    <!-- Retrieve metadata for all the packages specified under packageNames -->\n    <target name=\"retrievePkg\">\n      <sf:retrieve username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" retrieveTarget=\"retrieveOutput\" packageNames=\"${sf.pkgName}\"/>\n    </target>\n\n    <!-- Deploy the unpackaged set of metadata retrieved with retrieveUnpackaged -->\n    <target name=\"deployUnpackaged\">\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"retrieveUnpackaged\" rollbackOnError=\"true\"/>\n    </target>\n\n    <!-- Deploy a zip of metadata files to the org -->\n    <target name=\"deployZip\">\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" zipFile=\"${sf.zipFile}\" pollWaitMillis=\"1000\" rollbackOnError=\"true\"/>\n    </target>\n\n    <!-- Shows deploying code & running tests for code in directory -->\n    <target name=\"deployCode\">\n      <!-- Upload the contents of the \"codepkg\" directory, running the tests for just 1 class -->\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"codepkg\" rollbackOnError=\"true\">\n        <runTest>SampleDeployClass</runTest>\n      </sf:deploy>\n    </target>\n\n    <!-- Shows removing code; only succeeds if done after deployCode -->\n    <target name=\"undeployCode\">\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"removecodepkg\"/>\n    </target>\n\n    <!-- Shows retrieving code; only succeeds if done after deployCode -->\n    <target name=\"retrieveCode\">\n      <!-- Retrieve the contents listed in the file codepkg/package.xml into the codepkg directory -->\n      <sf:retrieve username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" retrieveTarget=\"codepkg\" unpackaged=\"codepkg/package.xml\"/>\n    </target>\n\n    <!-- Shows deploying code, running all tests, and running tests (1 of which fails), and logging. -->\n    <target name=\"deployCodeFailingTest\">\n      <!-- Upload the contents of the \"codepkg\" package, running all tests -->\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"codepkg\" runAllTests=\"true\" rollbackOnError=\"true\" logType=\"Debugonly\"/>\n    </target>\n\n    <!-- Shows check only; never actually saves to the server -->\n    <target name=\"deployCodeCheckOnly\">\n      <sf:deploy username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" maxPoll=\"${sf.maxPoll}\" deployRoot=\"codepkg\" checkOnly=\"true\"/>\n    </target>\n\n	<!-- Retrieve the information of all items of a particular metadata type -->\n    <target name=\"listMetadata\">\n      <sf:listMetadata username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\" metadataType=\"${sf.metadataType}\"/>\n    </target>\n\n	<!-- Retrieve the information on all supported metadata type -->\n    <target name=\"describeMetadata\">\n      <sf:describeMetadata username=\"${sf.username}\" password=\"${sf.password}\" serverurl=\"${sf.serverurl}\"/>\n    </target>\n</project>\n",
+			"file": "build.xml",
+			"file_size": 7062,
+			"file_write_time": 130545047204673145,
+			"settings":
+			{
+				"buffer_size": 7408,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n    <types>\n        <members>Batch_Job_Result__c</members>\n        <name>CustomObject</name>\n    </types>\n    <types>\n        <members>Batch_Job_Result__c</members>\n        <name>CustomTab</name>\n    </types>\n    <version>31.0</version>\n</Package>\n",
+			"file": "myTestOutput/package.xml",
+			"file_size": -1,
+			"file_write_time": -1,
+			"settings":
+			{
+				"buffer_size": 345,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/package.xml",
+			"settings":
+			{
+				"buffer_size": 221,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "unpackaged/package.xml",
+			"settings":
+			{
+				"buffer_size": 345,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Package xmlns=\"http://soap.sforce.com/2006/04/metadata\">\n    <types>\n        <members>Batch_Job_Result__c</members>\n        <name>CustomTab</name>\n    </types>\n    <types>\n        <members>Batch_Job_Result__c</members>\n        <name>CustomObject</name>\n    </types>\n    <version>31.0</version>\n</Package>",
+			"settings":
+			{
+				"buffer_size": 344,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "myOutput/package.xml",
+			"settings":
+			{
+				"buffer_size": 345,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "myOutput/objects/Batch_Job_Result__c.object",
+			"settings":
+			{
+				"buffer_size": 4646,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 465.0,
+		"selected_items":
+		[
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"pa",
+				"Package Control: Install Package"
+			],
+			[
+				"git: stat",
+				"Git: Status"
+			],
+			[
+				"git:stat",
+				"Git: Status"
+			],
+			[
+				"pack",
+				"Package Control: Install Package"
+			],
+			[
+				"git:gr",
+				"Git: Graph All"
+			],
+			[
+				"git",
+				"Git: Log Current File"
+			],
+			[
+				"git:",
+				"Git: Commit history"
+			],
+			[
+				"git:status",
+				"Git: Status"
+			]
+		],
+		"width": 549.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"git",
+			"git --version",
+			"git",
+			"import urllib.request,os; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); open(os.path.join(ipp, pf), 'wb').write(urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ','%20')).read())"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/dev/antwks/sbrefresh",
+		"/C/dev/antwks/sbrefresh/myOutput/objects",
+		"/C/dev/antwks/sbrefresh/myOutput/tabs",
+		"/C/dev/antwks/sbrefresh/mypkg/objects",
+		"/C/dev/antwks/sbrefresh/src",
+		"/C/dev/antwks/sbrefresh/unpackaged"
+	],
+	"file_history":
+	[
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/src/classes/BatchOpportunityEmailMask.cls-meta.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/removecodepkg/destructiveChanges.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/unpackaged/package.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/build.properties",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/src/classes/BatchContactEmailMask.cls",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/build.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/lib/ant-salesforce.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/src/package.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/src/classes/BatchAccountEmailMask.cls",
+		"/Users/kk/Library/Application Support/Sublime Text 3/Packages/Salesforce IDE/config/settings/toolingapi.sublime-settings",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/src/classes/BatchContactEmailMask.cls-meta.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/codepkg/classes/SampleDeployClass.cls",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/codepkg/triggers/SampleAccountTrigger.trigger",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/retrieveOutput/layouts/myobj__c-myobj Layout.layout",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/mypkg/package.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/lib/SampleDeployClass.cls-meta.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/codepkg/classes/SampleDeployClass.cls-meta.xml",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/build.xml.org",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/metadata.all",
+		"/Users/kk/Documents/Dv/antwks/sbrefresh/mypkg/objects/myobj__c.object",
+		"/Users/kk/Documents/Dv/st3wks/spgppqa-20140819/src/classes/LeaseScheduleBuilder.cls",
+		"/Users/kk/Documents/Dv/st3wks/spgppqa-20140819/src/classes/LeaseCalculatorBatch.cls",
+		"/Users/kk/Documents/Dv/st3wks/spgppqa-20140819/src/classes/LeadConversion.cls",
+		"/Users/kk/Documents/Dv/st3wks/spgppqa-20140819/src/classes/Refresh_SingleLine_Extension.cls",
+		"/Users/kk/Documents/Dv/st3wks/spgppqa-20140819/src/staticresources/Loading.resource",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/pages/MetaSearchTool.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/pages/ExpJSRemoteObj.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/classes/ExpJSRemoteObject.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/js/ApprovalProcessPreview.js",
+		"/Users/kk/Library/Application Support/Sublime Text 3/Packages/User/toolingapi.sublime-settings",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140818/src/pages/OpportunityDetailReduce.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/classes/MetaSearchTool.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/pages/MetaSearchToolv1.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/classes/MetaSearchToolv1.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/classes/MyException.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/classes/MyBase.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/classes/PositionEx.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/pages/ExpApexMetaSearch.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/pages/TestImPage.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/src/pages/actionFormTestPage.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140814/src/pages/MetaSearchTool.page",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140814/src/classes/MetaSearchTool.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140815/.history/describe/Approval.txt",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140814/src/classes/MyException.cls",
+		"/Users/kk/Documents/Dv/st3wks/khdev-20140814/src/classes/MyBase.cls",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/khdev/src/package.xml",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/src/main/java/com/dynaop/taskrole/common/entity/DomainObject.java",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/src/main/java/com/dynaop/taskrole/user/service/UserInfoService.java",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/taskrole.sublime-project",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/seTest/pom.xml",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/src/main/resources/struts/struts-login.xml",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/seTest/src/test/java/AccountManagement/AccountBillingCityRequiredTest.java",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/seTest/src/test/java/AccountManagement/AccountCreateAndDeleteTest.java",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/src/main/java/com/dynaop/taskrole/user/action/UserLoginAction.java",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/src/main/resources/spring/spring.xml",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole/src/main/java/com/dynaop/taskrole/user/dao/UserInfoDao.java",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/sp-uat/src/pages/ACBParanetLink.page-meta.xml",
+		"/Users/kk/Documents/Dv/ecwks/ec4.4/sp-uat/src/pages/MetaSearchTool.page"
+	],
+	"find":
+	{
+		"height": 30.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"/Users/kk/Documents/Dv/ecwks/ec4.4/taskrole"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"batch",
+			"error",
+			"100",
+			"Opptunity",
+			"email",
+			"Account",
+			"project",
+			"email",
+			"account",
+			"Account",
+			"login",
+			"serverUrl",
+			"deploy code",
+			"Quote",
+			"asynHandleApexId",
+			"asynHandleFolderResult",
+			"remote",
+			"meta",
+			"approvalProcess",
+			"checkLogin"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"Opportunity",
+			"Opptunity",
+			"Contact"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 5,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "build.properties",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 953,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								208,
+								208
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Java/JavaProperties.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "build.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7408,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								826,
+								826
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 264.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "myTestOutput/package.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 345,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/package.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 221,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								100,
+								181
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"default_dir": "C:\\dev\\antwks\\sbrefresh\\unpackaged",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "unpackaged/package.xml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 345,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								344,
+								0
+							]
+						],
+						"settings":
+						{
+							"side_bar_folders_auto_load_folder": 1,
+							"syntax": "Packages/XML/XML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 344,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								304,
+								306
+							]
+						],
+						"settings":
+						{
+							"default_dir": "C:\\dev\\antwks\\sbrefresh\\unpackaged",
+							"syntax": "Packages/XML/XML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "myOutput/package.xml",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 345,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "myOutput/objects/Batch_Job_Result__c.object",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4646,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								582,
+								582
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/XML/XML.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1518.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 30.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.panel":
+	{
+		"height": 229.0
+	},
+	"project": "ant.sublime-project",
+	"replace":
+	{
+		"height": 56.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"lead",
+				"codepkg/classes/SampleDeployClass.cls"
+			],
+			[
+				"leach",
+				"spgppqa-20140819/src/classes/LeaseCalculatorBatch.cls"
+			],
+			[
+				"metasear",
+				"khdev-20140815/src/pages/MetaSearchTool.page"
+			],
+			[
+				"meta",
+				"khdev-20140814/src/pages/MetaSearchTool.page"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"Meta",
+				"MetaSearchTool"
+			],
+			[
+				"LoginA",
+				"UserLoginAction"
+			]
+		],
+		"width": 773.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 538.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

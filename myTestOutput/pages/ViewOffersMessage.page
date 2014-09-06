@@ -1,0 +1,102 @@
+<apex:page standardController="Contact"  extensions="ContactExtController">
+
+
+<apex:includeScript value="{!URLFOR($Resource.KendoUI, '/js/jquery.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.KendoUI, '/js/kendo.all.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.KendoUI, '/styles/kendo.common.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.KendoUI, '/styles/kendo.default.min.css')}" />
+    <div id="outerdiv">
+        <apex:pageMessages />
+    <apex:form id="theform">
+      <apex:actionFunction name="jsupdate" action="{!accept}">
+        <apex:param id="sf_id" name="sf_id" value="" />
+        </apex:actionFunction>
+
+    <apex:pageBlock title="Offer Viewer: {!contact.name}" id="allblock">
+       <apex:pageBlockButtons >
+       <apex:commandButton value="Done" action="{!done}" />
+       </apex:pageBlockButtons>
+  
+        
+           
+            <apex:pageBlockSection columns="1" rendered="{!(validoffers.size != 0)}" title="Available offers">
+                <apex:pageBlockSectionItem >
+                    <table id="user-table"></table>
+                </apex:pageBlockSectionItem>
+                    
+               
+            </apex:pageBlockSection>
+           
+    </apex:pageBlock>
+    
+    </apex:form>
+     <script>
+    function callJsUpdate(dom, sf_id){
+        alert(sf_id);
+        jsupdate(sf_id);
+    }
+    
+    $(document).ready(function() {
+            var data = [
+                <apex:repeat value="{!validoffers}" var="V">
+                    {
+                        sf_id:                 "{!JSENCODE(V.Id)}",
+                        Description:           "{!V.Description__c}",
+                        ValidThrough:               "{!V.Valid_Through__c}",
+                        CurrentUnitsAvailable:           "{!V.Current_Units_Available__c}"
+                     
+                                            
+                    },
+                </apex:repeat>
+            ];
+            
+            var templ = kendo.template("<input type='button' value='Accept' onclick='callJsUpdate(this, \"${sf_id}\")' />");
+            var temp2 = kendo.template('# var showDate = ""; if (ValidThrough != null && ValidThrough !=\'\') showDate = kendo.toString(new Date(ValidThrough),"MM/dd/yyyy");#' + '#= showDate #');
+           
+            $("#user-table").kendoGrid({
+                dataSource: {
+                    data: data,
+                    pageSize: 50
+                },
+               
+                scrollable: true,
+                sortable: true,
+                pageable: true,
+             //   filterable: true,
+                resizable: true,
+                height: 500,
+                reorderable: true,
+                schema: {
+                
+               
+                    model: {
+                        fields: {
+                            sf_id:             { type: "string" },                            
+                            Description:             { type: "string" },
+                            ValidThrough:            { type: "date"},
+                            CurrentUnitsAvailable:   { type: "string" }
+                         
+                            
+                        }
+                    }
+                },
+                columns: [
+                    
+                    { field: "",    width: "100px",     title: "Name",template:templ },
+                    { field: "Description",   width: "60px",  title: "Description"},
+                    { field: "ValidThrough", width: "60px", title: "ValidThrough",  template:temp2 },
+                    { field: "CurrentUnitsAvailable",   width: "60px",  title: "CurrentUnitsAvailable"}
+                 
+                             
+                         
+                  
+                   
+                ]
+            });
+           
+        });
+   
+    
+   </script>
+    </div>
+</apex:page>
